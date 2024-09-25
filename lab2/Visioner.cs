@@ -22,15 +22,16 @@ namespace lab2
             }
             else if (type == 2)
             {
-                var subs = ReadSubs();
+                var sub1 = ReadSubs(1);
+                var sub2 = ReadSubs(2);
 
                 Console.Write($"Введите текст для шифрования: ");
                 var text = Console.ReadLine();
 
-                string encoded = EncryptWithSubstitution(text, subs);
+                string encoded = EncryptWithSubstitution(text, sub1, sub2);
                 Console.WriteLine($"Зашифрованный текст: {encoded}");
 
-                Console.WriteLine($"Расшифрованный обратно текст: {DecryptWithSubstitution(encoded, subs)}");
+                Console.WriteLine($"Расшифрованный обратно текст: {DecryptWithSubstitution(encoded, sub1, sub2)}");
             }
         }
 
@@ -98,10 +99,10 @@ namespace lab2
             return result;
         }
 
-        private Dictionary<char, char> ReadSubs()
+        private Dictionary<char, char> ReadSubs(int i)
         {
             Dictionary<char, char> res = new Dictionary<char, char>();
-            using (var sr = new StreamReader("subs.txt"))
+            using (var sr = new StreamReader($"subs{i}.txt"))
             {
                 while (!sr.EndOfStream)
                 {
@@ -113,46 +114,83 @@ namespace lab2
         }
 
         // Функция для шифрования текста с системой подстановок
-        public static string EncryptWithSubstitution(string text, Dictionary<char, char> substitutions)
+        public static string EncryptWithSubstitution(string text, Dictionary<char, char> sub1, Dictionary<char, char> sub2)
         {
             string result = string.Empty;
 
+            int step = 0;
             foreach (char character in text)
             {
-                if (substitutions.ContainsKey(character))
+                if (step == 0)
                 {
-                    result += substitutions[character];
+                    if (sub1.ContainsKey(character))
+                    {
+                        result += sub1[character];
+                    }
+                    else
+                    {
+                        result += character;
+                    }
                 }
-                else
+                else if (step == 1)
                 {
-                    result += character;
+                    if (sub2.ContainsKey(character))
+                    {
+                        result += sub2[character];
+                    }
+                    else
+                    {
+                        result += character;
+                    }
                 }
+                step = (step + 1) % 2;
             }
             return result;
         }
 
         // Функция для расшифровки текста с системой подстановок
-        public static string DecryptWithSubstitution(string text, Dictionary<char, char> substitutions)
+        public static string DecryptWithSubstitution(string text, Dictionary<char, char> sub1, Dictionary<char, char> sub2)
         {
             string result = string.Empty;
-            Dictionary<char, char> reverseSubstitutions = new Dictionary<char, char>();
+            Dictionary<char, char> rSub1 = new Dictionary<char, char>();
+            Dictionary<char, char> rSub2 = new Dictionary<char, char>();
 
             // Создаем обратную систему подстановок для расшифровки
-            foreach (var pair in substitutions)
+            foreach (var pair in sub1)
             {
-                reverseSubstitutions[pair.Value] = pair.Key;
+                rSub1[pair.Value] = pair.Key;
+            }
+            foreach (var pair in sub2)
+            {
+                rSub2[pair.Value] = pair.Key;
             }
 
+            int step = 0;
             foreach (char character in text)
             {
-                if (reverseSubstitutions.ContainsKey(character))
+                if (step == 0)
                 {
-                    result += reverseSubstitutions[character];
+                    if (rSub1.ContainsKey(character))
+                    {
+                        result += rSub1[character];
+                    }
+                    else
+                    {
+                        result += character;
+                    }
                 }
-                else
+                else if (step == 1)
                 {
-                    result += character;
+                    if (rSub2.ContainsKey(character))
+                    {
+                        result += rSub2[character];
+                    }
+                    else
+                    {
+                        result += character;
+                    }
                 }
+                step = (step + 1) % 2;
             }
             return result;
         }
